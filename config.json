@@ -1,0 +1,12 @@
+{
+    "mysql": {
+        "host": "192.168.2.107",
+        "port": 3306,
+        "username": "ash",
+        "password": "GenshinImpactOffline2025",
+        "database": "db_hk4e_user_gio"
+    },
+    "server": {
+        "port": 8080
+    }
+} 

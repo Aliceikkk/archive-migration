@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>存档迁移系统</title>
+    <!-- 添加 SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-image: url('img/1.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            min-width: 300px;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input {
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        /* 添加以下样式来固定页面 */
+        html {
+            overflow-y: scroll;
+        }
+        
+        body {
+            padding-right: 0 !important; /* 防止滚动条闪动 */
+        }
+        
+        /* 自定义 SweetAlert2 样式 */
+        .swal2-popup {
+            width: 300px !important;  /* 减小弹窗宽度 */
+            font-size: 14px !important;  /* 减小字体大小 */
+        }
+        
+        .swal2-title {
+            font-size: 18px !important;  /* 减小标题字体大小 */
+        }
+        
+        .swal2-content {
+            font-size: 14px !important;  /* 减小内容字体大小 */
+        }
+        
+        .swal2-confirm, .swal2-cancel {
+            font-size: 14px !important;  /* 减小按钮字体大小 */
+            padding: 8px 20px !important;  /* 调整按钮大小 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="title">存档迁移系统</h2>
+        <div class="input-group">
+            <label for="oldUid">老 UID：</label>
+            <input type="text" id="oldUid" name="oldUid" placeholder="请输入老UID">
+        </div>
+        <div class="input-group">
+            <label for="newUid">新 UID：</label>
+            <input type="text" id="newUid" name="newUid" placeholder="请输入新UID">
+        </div>
+        <button onclick="migrateData()" id="migrateBtn">迁移存档</button>
+    </div>
+
+    <script>
+        function validateUID(uid) {
+            return /^\d+$/.test(uid);
+        }
+
+        async function migrateData() {
+            const oldUid = document.getElementById('oldUid').value.trim();
+            const newUid = document.getElementById('newUid').value.trim();
+            const migrateBtn = document.getElementById('migrateBtn');
+
+            if (!oldUid || !newUid) {
+                Swal.fire({
+                    title: '输入错误',
+                    text: '请填写完整的UID信息',
+                    icon: 'warning',
+                    confirmButtonColor: '#4CAF50',
+                    heightAuto: false,  // 防止页面跳动
+                    customClass: {
+                        popup: 'swal2-popup'  // 使用自定义样式
+                    }
+                });
+                return;
+            }
+
+            if (!validateUID(oldUid) || !validateUID(newUid)) {
+                Swal.fire({
+                    title: '格式错误',
+                    text: 'UID必须是纯数字',
+                    icon: 'error',
+                    confirmButtonColor: '#4CAF50',
+                    heightAuto: false,
+                    customClass: {
+                        popup: 'swal2-popup'
+                    }
+                });
+                return;
+            }
+
+            // 显示加载中
+            migrateBtn.disabled = true;
+            const loadingSwal = Swal.fire({
+                title: '正在迁移',
+                text: '请耐心等待...',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                showConfirmButton: false,
+                heightAuto: false,
+                customClass: {
+                    popup: 'swal2-popup'
+                },
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch('/migrate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        oldUid: oldUid,
+                        newUid: newUid
+                    })
+                });
+
+                const data = await response.json();
+                await loadingSwal.close();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: '迁移成功',
+                        text: '存档已成功迁移',
+                        icon: 'success',
+                        confirmButtonColor: '#4CAF50',
+                        heightAuto: false,
+                        customClass: {
+                            popup: 'swal2-popup'
+                        }
+                    });
+                    // 清空输入框
+                    document.getElementById('oldUid').value = '';
+                    document.getElementById('newUid').value = '';
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                await loadingSwal.close();
+                await Swal.fire({
+                    title: '迁移失败',
+                    text: error.message || '发生未知错误',
+                    icon: 'error',
+                    confirmButtonColor: '#4CAF50',
+                    heightAuto: false,
+                    customClass: {
+                        popup: 'swal2-popup'
+                    }
+                });
+            } finally {
+                migrateBtn.disabled = false;
+            }
+        }
+
+        // 添加回车键提交功能
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                migrateData();
+            }
+        });
+    </script>
+</body>
+</html> 
