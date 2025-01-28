@@ -115,6 +115,31 @@
     </div>
 
     <script>
+        // 添加配置对象
+        let config = {
+            api: {
+                baseUrl: '',
+                endpoints: {
+                    migrate: '/migrate'
+                }
+            }
+        };
+
+        // 加载配置文件
+        async function loadConfig() {
+            try {
+                const response = await fetch('/config.json');
+                if (!response.ok) {
+                    throw new Error('加载配置文件失败');
+                }
+                config = await response.json();
+            } catch (error) {
+                console.error('加载配置文件失败:', error);
+                // 使用默认配置
+                config.api.baseUrl = window.location.origin;
+            }
+        }
+
         function validateUID(uid) {
             return /^\d+$/.test(uid);
         }
@@ -171,16 +196,28 @@
             });
 
             try {
-                const response = await fetch('/migrate', {
+                const response = await fetch(config.api.baseUrl + config.api.endpoints.migrate, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         oldUid: oldUid,
                         newUid: newUid
                     })
                 });
+
+                // 检查响应状态
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // 检查响应类型
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("返回的不是 JSON 格式!");
+                }
 
                 const data = await response.json();
                 await loadingSwal.close();
@@ -225,6 +262,9 @@
                 migrateData();
             }
         });
+
+        // 页面加载时初始化配置
+        document.addEventListener('DOMContentLoaded', loadConfig);
     </script>
 </body>
 </html> 
