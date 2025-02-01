@@ -122,6 +122,10 @@
                 endpoints: {
                     migrate: '/migrate'
                 }
+            },
+            cors: {
+                mode: '',
+                credentials: ''
             }
         };
 
@@ -202,6 +206,8 @@
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
+                    mode: config.cors.mode,
+                    credentials: config.cors.credentials,
                     body: JSON.stringify({
                         oldUid: oldUid,
                         newUid: newUid
