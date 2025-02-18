@@ -14,6 +14,7 @@ type PlayerData struct {
     Level    int    `gorm:"column:level"`
     Exp      int    `gorm:"column:exp"`
     BinData  []byte `gorm:"column:bin_data;type:mediumblob"`
+    JsonData string `gorm:"column:json_data;type:varchar(512)"`
 }
 
 func (PlayerData) TableName() string {

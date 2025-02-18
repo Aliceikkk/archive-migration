@@ -62,9 +62,10 @@ func MigratePlayerData(oldUID, newUID string) error {
 	// 更新新号数据
 	newTableName := fmt.Sprintf("t_player_data_%s", newLastDigit)
 	if err := database.DB.Table(newTableName).Where("uid = ?", newUIDInt).Updates(map[string]interface{}{
-		"level":    oldData.Level,
-		"exp":      oldData.Exp,
-		"bin_data": oldData.BinData,
+		"level":     oldData.Level,
+		"exp":       oldData.Exp,
+		"bin_data":  oldData.BinData,
+		"json_data": oldData.JsonData,
 	}).Error; err != nil {
 		logger.Error("更新新号数据失败: " + err.Error())
 		return err
